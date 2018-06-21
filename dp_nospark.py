@@ -1,7 +1,8 @@
-# coding UTF-8
+# coding:utf-8
 import random
+import pdb
 
-N = 100
+N = 3
 A = 0
 
 random.seed(1)
@@ -11,28 +12,28 @@ for i in range(N):
         A += a[i]
 
 # 初期化
-dp = [[0 for i in range(A+1)] for j in range(N+1)]
-dp[0][0] = 1
-flag = [0 for i in range(N)]
-
+dp = [[(False,[]) for j in range(A+1)] for i in range(N+1)]
+dp[0][0] = (True,[])
+pdb.set_trace()
 # DP
 for i in range(N):
     for j in range(A+1):
         if a[i] <= j:  # i+1番目の数字a[i]を足せるかも
-            if dp[i][j - a[i]]:
-                dp[i + 1][j] = 1
+            if dp[i][j - a[i]][0]:
+                dp[i + 1][j] = (True,dp[i][j-a[i]][1]+[a[i],])
 
-            elif dp[i][j]:
-                dp[i+1][j] = 1
+            elif dp[i][j][0]:
+                dp[i+1][j] = (True,dp[i][j][1])
+                
+            else:
+                dp[i+1][j] = (False,[])
         else:  # 入る可能性はない
-            dp[i+1][j] = dp[i][j]
+            dp[i+1][j] = (False,[])
 
-print("Answer:" + str(A))
-check = 0
-for i in range(N):
-    if(flag[i]):
-        print(a[i])
-        check += a[i]
-
-if check != A:
+print("Target:" + str(A))
+sum = 0
+for selected in dp[N][A][1]:
+    sum+=selected
+print("Answer:" + str(sum))
+if sum != A:
     print("error!")
