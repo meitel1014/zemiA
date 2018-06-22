@@ -1,39 +1,39 @@
-# coding:utf-8
+# -*- coding: utf-8 -*-
+# coding UTF-8
 import random
-import pdb
 
-N = 3
+N = 100
 A = 0
 
 random.seed(1)
 a = [random.randint(0, 100) for i in range(N)]  # 小切手の配列
 for i in range(N):
+    print(a[i])
     if random.randint(0, 1) != 0:
         A += a[i]
 
 # 初期化
-dp = [[(False,[]) for j in range(A+1)] for i in range(N+1)]
-dp[0][0] = (True,[])
-pdb.set_trace()
+dp = [-1 for i in range(A+1)]
+dp[0] = 0
+
 # DP
 for i in range(N):
-    for j in range(A+1):
-        if a[i] <= j:  # i+1番目の数字a[i]を足せるかも
-            if dp[i][j - a[i]][0]:
-                dp[i + 1][j] = (True,dp[i][j-a[i]][1]+[a[i],])
-
-            elif dp[i][j][0]:
-                dp[i+1][j] = (True,dp[i][j][1])
-                
-            else:
-                dp[i+1][j] = (False,[])
-        else:  # 入る可能性はない
-            dp[i+1][j] = (False,[])
-
-print("Target:" + str(A))
-sum = 0
-for selected in dp[N][A][1]:
-    sum+=selected
-print("Answer:" + str(sum))
-if sum != A:
-    print("error!")
+    for j in reversed(range(A+1)):
+        if(dp[j] == -1):
+            continue
+        if ((a[i]+j <= A) and (dp[a[i]+j] == -1)):
+            dp[a[i]+j] = a[i]
+    if(dp[A] != -1):
+        break
+print("Answer:" + str(A))
+check = 0
+x = A
+while(1):
+    check += dp[x]
+    print(dp[x])
+    x = x-dp[x]
+    if(x <= 0):
+        break
+print("check="+str(check))
+if check == A:
+    print("OK")
