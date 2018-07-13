@@ -9,11 +9,11 @@ sc = SparkContext(conf = conf)
 def table(rdd):
     return [(i,-1) for i in range(rdd[0]*100,(rdd[0]+1)*100-1)]
 
-N = 10
+N = 5
 A = 0
 
 random.seed(1)
-a = random.sample(range(15),N)  # 小切手の配列
+a = random.sample(range(5),N)  # 小切手の配列
 for i in range(N):
 #    print(a[i])
     if random.randint(0, 1) != 0:
@@ -30,23 +30,29 @@ while(dp_rdd.count()<A+1):
     
 dp_rdd=dp_rdd.map(lambda x:(x[0],0)if x[0]==0 else x)
 dp_rdd.sortByKey()
-results=dp_rdd.collect()
+#results=dp_rdd.collect()
 
 # DP
+pre_rdd=None
+dp_rdd.persist()
 for i in range(N):
     for j in reversed(range(A+1)):
-        print(dp_rdd.lookup(j)[0])
+        #print(dp_rdd.lookup(j)[0])
         if(dp_rdd.lookup(j)[0] == -1):
             continue
         if ((a[i]+j <= A) and (dp_rdd.lookup(a[i]+j)[0] == -1)):
-            dp_rdd=dp_rdd.map(lambda x:(x[0],a[i])if x[0]==a[i]+j else x)
-            dp_rdd.cache()
+            pre_rdd=dp_rdd
+            dp_rdd=pre_rdd.map(lambda x:(x[0],a[i])if x[0]==a[i]+j else x)
+            if(pre_rdd!=None):
+                pre_rdd.unpersist()
+            dp_rdd.persist()
             #dp[a[i]+j] = a[i]
            
-    dp_rdd.uncache() 
-    dp_rdd.cache()
+    #dp_rdd.unpersist() 
+    #dp_rdd.persist()
     if(dp_rdd.lookup(A)[0] != -1):
         break
+        
 
 elapsed_time = time.time() - start
 print ("elapsed_time:{0}".format(elapsed_time) + "[sec]")
@@ -67,6 +73,7 @@ while(1):
     x = x-dpx
     if(x <= 0):
         break
+dp_rdd.unpersist()
 print("check="+str(check))
 if check == A:
     print("OK")
